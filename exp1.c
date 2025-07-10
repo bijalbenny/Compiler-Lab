@@ -101,3 +101,11 @@ int main() {
     fclose(fp);
     return 0;
 }
+
+
+/*input
+c= 2.5 + b;
+printf b;
+//hello
+if( a > b){
+*/
