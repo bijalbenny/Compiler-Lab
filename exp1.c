@@ -2,115 +2,102 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
-int isKeyword(char buffer[]) {
-if(strcmp(buffer,"printf")==0){
- return 2;
- }
-  char keywords[32][10] = {
-    "auto", "break", "case", "char", "const", "continue", "default", "do",
-    "double", "else", "enum", "extern", "float", "for", "goto", "if",
-    "int", "long", "register", "return", "short", "signed", "sizeof",
-    "static", "struct", "switch", "typedef", "union", "unsigned", "void",
-    "volatile", "while"
-  };
-  for (int i = 0; i < 32; ++i) {
-    if (strcmp(keywords[i], buffer) == 0)
-      return 1;
-  }
-  return 0;
+bool isKeyword(char buffer[]) {
+    char keywords[32][10] = {
+        "auto", "break", "case", "char", "const", "continue", "default",
+        "do", "double", "else", "enum", "extern", "float", "for", "goto",
+        "if", "int", "long", "register", "return", "short", "signed",
+        "sizeof", "static", "struct", "switch", "typedef", "union",
+        "unsigned", "void", "volatile", "while"
+    };
+
+    for (int i = 0; i < 32; ++i) {
+        if (strcmp(keywords[i], buffer) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool isOperator(char ch) {
+    char operators[] = "+-*/%=><!";
+    for (int i = 0; i < 9; i++) {
+        if (ch == operators[i])
+            return true;
+    }
+    return false;
+}
+
+bool isSpecial(char ch) {
+    char specials[] = "();{}[]";
+    for (int i = 0; i < 7; i++) {
+        if (ch == specials[i])
+            return true;
+    }
+    return false;
+}
+
+bool isNumber(char buffer[]) {
+    int len = strlen(buffer);
+    for (int i = 0; i < len; i++) {
+        if (!isdigit(buffer[i]) && buffer[i] != '.')
+            return false;
+    }
+    return true;
 }
 
 int main() {
-  char ch, buffer[20], operators[] = "+-*/%=<>&|!", separators[] = "();{}[],";
-  FILE *fp;
-  int i, j = 0;
-  int in_single_line_comment = 0, in_multi_line_comment = 0;
-
-  fp = fopen("lex.txt", "r");
-  if (fp == NULL) {
-    printf("Error while opening the file\n");
-    exit(0);
-  }
-
-  while ((ch = fgetc(fp)) != EOF) {
-    // Check for start of comment
-    if (ch == '/') {
-      char next = fgetc(fp);
-      if (next == '/') {
-        in_single_line_comment = 1;
-        continue;
-      } else if (next == '*') {
-        in_multi_line_comment = 1;
-        continue;
-      } else {
-        ungetc(next, fp);  // Not a comment, put it back
-      }
+    char ch, buffer[15];
+    FILE *fp;
+    int j = 0;
+    fp = fopen("input.txt", "r");
+    if (fp == NULL) {
+        printf("Error while opening the file\n");
+        return 1;
     }
+    
+    while ((ch = fgetc(fp)) != EOF) {
+        if (isalnum(ch) || ch == '.') {
+            buffer[j++] = ch;
+        } else if ((ch == ' ' || ch == '\n' || isOperator(ch) || isSpecial(ch)) && (j != 0)) {
+            buffer[j] = '\0';
+            j = 0;
+            if (isNumber(buffer))
+                printf("[%s : Number]\n", buffer);
+            else if (isKeyword(buffer))
+                printf("[%s : Keyword]\n", buffer);
+            else
+                printf("[%s : Identifier]\n", buffer);
+        }
 
-    // Check for end of comments
-    if (in_single_line_comment && ch == '\n') {
-      in_single_line_comment = 0;
-      continue;
+        // Handle single-line comments
+        if (ch == '/') {
+            char next = fgetc(fp);
+            if (next == '/') {
+                while ((ch = fgetc(fp)) != '\n' && ch != EOF);
+                continue;
+            } else if (next == '*') {
+                while (true) {
+                    ch = fgetc(fp);
+                    if (ch == EOF) break;
+                    if (ch == '*') {
+                        if ((ch = fgetc(fp)) == '/') break;
+                    }
+                }
+                continue;
+            } else {
+                ungetc(next, fp); // Put back the character if it's not part of a comment
+            }
+        }
+
+        if (isOperator(ch))
+            printf("[%c : Operator]\n", ch);
+        else if (isSpecial(ch))
+            printf("[%c : Special Symbol]\n", ch);
     }
-    if (in_multi_line_comment && ch == '*') {
-      char next = fgetc(fp);
-      if (next == '/') {
-        in_multi_line_comment = 0;
-        continue;
-      } else {
-        ungetc(next, fp);
-      }
-    }
-
-    if (in_single_line_comment || in_multi_line_comment)
-      continue;
-
-    // Check for operators
-    for (i = 0; operators[i] != '\0'; ++i) {
-      if (ch == operators[i]) {
-        printf("%c is operator\n", ch);
-        break;
-      }
-    }
-
-    // Check for separators
-    for (i = 0; separators[i] != '\0'; ++i) {
-      if (ch == separators[i]) {
-        printf("%c is separator\n", ch);
-        break;
-      }
-    }
-
-    // Build token (identifier or keyword)
-    if (isalnum(ch) || ch == '.') {
-      buffer[j++] = ch;
-    } else if ((ch == ' ' || ch == '\n' || ch == '\t') && j != 0) {
-      buffer[j] = '\0';
-      j = 0;
-      int result = isKeyword(buffer);
-if (result == 1)
-    printf("%s is keyword\n", buffer);
-else if (result == 2)
-    printf("printf is a function name\n");
-else
-    printf("%s is an identifier\n", buffer);
-    }
-  }
-
-  // Final buffer check in case file doesn't end with whitespace
-  if (j != 0) {
-    buffer[j] = '\0';
-    if (isKeyword(buffer))
-      printf("%s is keyword\n", buffer);
-    else
-      printf("%s is an identifier\n", buffer);
-  }
-
-  fclose(fp);
-  return 0;
+    
+    fclose(fp);
+    return 0;
 }
-
-
-
-
