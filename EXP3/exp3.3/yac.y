@@ -6,6 +6,7 @@
 %token NUMBER
 %left '+' '-'
 %left '*' '/' '%'
+%left '(' ')'
 %%
 ArithmeticExpression : E{
     printf("Result: %d\n",$$);
