@@ -7,8 +7,8 @@ char temp = 'Z';
 void generateIntermediateCode(char *e) {
     char result = e[0];
     int len = strlen(e);
-    char temps[20];  // store temp replacements
-    for (int i = 0; i < len; i++) temps[i] = e[i];
+   // char temps[20];  // store temp replacements
+   // for (int i = 0; i < len; i++) temps[i] = e[i];
 
     // handle * and /
     for (int i = 0; i < len; i++) {
