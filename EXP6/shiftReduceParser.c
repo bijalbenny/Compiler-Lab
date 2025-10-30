@@ -34,6 +34,9 @@ void main() {
     if (strcmp(stack, "E") == 0 && strspn(input, " ") == inputLength) {
         printf("\n$%s\t%s$\tACCEPT\n", stack, input);
     }
+    else{
+        printf("String Not Accepted\n");
+    }
 }
 
 void reduce() {
@@ -69,7 +72,7 @@ void reduce() {
         if (stack[checkIndex] == '(' && stack[checkIndex + 1] == 'E' && stack[checkIndex + 2] == ')') {
             stack[checkIndex] = 'E';
             stack[checkIndex + 1] = '\0';
-            stack[checkIndex + 1] = '\0';
+            stack[checkIndex + 2] = '\0';
             printf("\n$%s\t%s$\t%s", stack, input, actionStr);
             stackIndex = stackIndex - 2;
         }
