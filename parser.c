@@ -13,24 +13,24 @@ char expr[100];
             num =num*10 + (c-'0');
         }
         if(c=='+'||c=='-'||c=='*'||c=='/'||i==len-1){
-            if(i==len-1&&(c>='0'&& c<='9'));
+            
         
-        if(op=='+'){
-            result +=lastTerm;
-            lastTerm=num;
-        }
-        else if(op=='-'){
-            result +=lastTerm;
-            lastTerm=-num;
-        }
-        else if(op=='*'){
-            lastTerm*=num;
-        }
-        else if(op=='/'){
-            lastTerm /=num;
-        }
-        op=c;
-        num=0;
+         if(op=='+'){
+             result +=lastTerm;
+             lastTerm=num;
+         }
+         else if(op=='-'){
+             result +=lastTerm;
+             lastTerm=-num;
+         }
+         else if(op=='*'){
+             lastTerm*=num;
+         }
+         else if(op=='/'){
+             lastTerm /=num;
+         }
+         op=c;
+         num=0;
 
     }
    }   
